@@ -175,11 +175,18 @@ public class TTTConsoleNonOO {
             initGame();
             // Prompt the user whether to play again
             System.out.print("Play again y/n? ");
-            char ans = in.next().charAt(0);
-            if (ans != 'y' && ans != 'Y') {
-                System.out.println("Bye!");
-                System.exit(0);  // terminate the program
-            }
+            boolean invalid = true;
+            do {
+                char ans = in.next().charAt(0);
+                if (ans == 'n' || ans == 'N') {
+                    System.out.println("Bye!");
+                    System.exit(0);  // terminate the program
+                } else if (ans == 'y' || ans == 'Y') {
+                    invalid = false;
+                } else {
+                    System.out.println("Invalid input, try again");
+                }
+            } while (invalid);
         } while (true);  // repeat until user did not answer yes
     }
 }
