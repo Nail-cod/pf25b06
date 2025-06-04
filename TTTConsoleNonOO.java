@@ -174,7 +174,7 @@ public class TTTConsoleNonOO {
             // Play the game once
             initGame();
             // Prompt the user whether to play again
-            System.out.print("Play again, Nail? ");
+            System.out.print("Play again y/n? ");
             char ans = in.next().charAt(0);
             if (ans != 'y' && ans != 'Y') {
                 System.out.println("Bye!");
