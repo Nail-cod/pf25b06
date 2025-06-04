@@ -8,8 +8,8 @@ public class TTTConsoleNonOO {
     // Define named constants for:
     //  1. Player: using CROSS and NOUGHT
     //  2. Cell contents: using CROSS, NOUGHT and NO_SEED
-    public static final int CROSS   = 0;
-    public static final int NOUGHT  = 1;
+    public static final int CROSS = 0;
+    public static final int NOUGHT = 1;
     public static final int NO_SEED = 2;
 
     // The game board
@@ -20,16 +20,18 @@ public class TTTConsoleNonOO {
     public static int currentPlayer;  // CROSS, NOUGHT
 
     // Define named constants to represent the various states of the game
-    public static final int PLAYING    = 0;
-    public static final int DRAW       = 1;
-    public static final int CROSS_WON  = 2;
+    public static final int PLAYING = 0;
+    public static final int DRAW = 1;
+    public static final int CROSS_WON = 2;
     public static final int NOUGHT_WON = 3;
     // The current state of the game
     public static int currentState;
 
     public static Scanner in = new Scanner(System.in); // the input Scanner
 
-    /** The entry main method (the program starts here) */
+    /**
+     * The entry main method (the program starts here)
+     */
     public static void main(String[] args) {
         // Initialize the board, currentState and currentPlayer
         initGame();
@@ -54,7 +56,9 @@ public class TTTConsoleNonOO {
         } while (currentState == PLAYING); // repeat if not game over
     }
 
-    /** Initialize the board[][], currentState and currentPlayer for a new game*/
+    /**
+     * Initialize the board[][], currentState and currentPlayer for a new game
+     */
     public static void initGame() {
         for (int row = 0; row < ROWS; ++row) {
             for (int col = 0; col < COLS; ++col) {
@@ -62,11 +66,13 @@ public class TTTConsoleNonOO {
             }
         }
         currentPlayer = CROSS;   // cross plays first
-        currentState  = PLAYING; // ready to play
+        currentState = PLAYING; // ready to play
     }
 
-    /** The currentPlayer makes one move (one step).
-     Update board[selectedRow][selectedCol] and currentState. */
+    /**
+     * The currentPlayer makes one move (one step).
+     * Update board[selectedRow][selectedCol] and currentState.
+     */
     public static void stepGame() {
         boolean validInput = false;  // for input validation
         do {
@@ -94,6 +100,7 @@ public class TTTConsoleNonOO {
      * The given player makes a move at (selectedRow, selectedCol).
      * Update board[selectedRow][selectedCol]. Compute and return the
      * new game state (PLAYING, DRAW, CROSS_WON, NOUGHT_WON).
+     *
      * @return new game state
      */
     public static int stepGameUpdate(int player, int selectedRow, int selectedCol) {
@@ -129,7 +136,9 @@ public class TTTConsoleNonOO {
         }
     }
 
-    /** Print the game board */
+    /**
+     * Print the game board
+     */
     public static void paintBoard() {
         for (int row = 0; row < ROWS; ++row) {
             for (int col = 0; col < COLS; ++col) {
@@ -146,12 +155,31 @@ public class TTTConsoleNonOO {
         System.out.println();
     }
 
-    /** Print a cell having the given content */
+    /**
+     * Print a cell having the given content
+     */
     public static void paintCell(int content) {
         switch (content) {
-            case CROSS:   System.out.print(" X "); break;
-            case NOUGHT:  System.out.print(" O "); break;
-            case NO_SEED: System.out.print("   "); break;
+            case CROSS:
+                System.out.print(" X ");
+                break;
+            case NOUGHT:
+                System.out.print(" O ");
+                break;
+            case NO_SEED:
+                System.out.print("   ");
+                break;
         }
+        do {
+            // Play the game once
+            initGame();
+            // Prompt the user whether to play again
+            System.out.print("Play again (y/n)? ");
+            char ans = in.next().charAt(0);
+            if (ans != 'y' && ans != 'Y') {
+                System.out.println("Bye!");
+                System.exit(0);  // terminate the program
+            }
+        } while (true);  // repeat until user did not answer yes
     }
 }
