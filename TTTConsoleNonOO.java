@@ -45,11 +45,11 @@ public class TTTConsoleNonOO {
             paintBoard();
             // Print message if game over
             if (currentState == CROSS_WON) {
-                System.out.println("'X' won!\nBye!");
+                System.out.println("'X' won!");
             } else if (currentState == NOUGHT_WON) {
-                System.out.println("'O' won!\nBye!");
+                System.out.println("'O' won!");
             } else if (currentState == DRAW) {
-                System.out.println("It's a Draw!\nBye!");
+                System.out.println("It's a Draw!");
             }
             // Switch currentPlayer
             currentPlayer = (currentPlayer == CROSS) ? NOUGHT : CROSS;
@@ -174,7 +174,7 @@ public class TTTConsoleNonOO {
             // Play the game once
             initGame();
             // Prompt the user whether to play again
-            System.out.print("Play again (y/n)? ");
+            System.out.print("Play again, Nail? ");
             char ans = in.next().charAt(0);
             if (ans != 'y' && ans != 'Y') {
                 System.out.println("Bye!");
