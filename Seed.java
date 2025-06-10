@@ -1,29 +1,31 @@
 /**
- * The Cell class models each individual cell of the TTT 3x3 grid.
+ * This enum is used by:
+ * 1. Player: takes value of CROSS or NOUGHT
+ * 2. Cell content: takes value of CROSS, NOUGHT, or NO_SEED.
+ *
+ * We also attach a display icon (text or image) for each of the item,
+ *   and define the related variable/constructor/getter.
+ *
+ * Ideally, we should define two enums with inheritance, which is,
+ *  however, not supported.
  */
-public class Cell {  // save as "Cell.java"
-    // Define properties (package-visible)
-    /** Content of this cell (CROSS, NOUGHT, NO_SEED) */
-    Seed content;
-    /** Row and column of this cell, not used in this program */
-    int row, col;
+public enum Seed {   // to save as "Seed.java"
+    CROSS("X"), NOUGHT("O"), NO_SEED(" ");
 
-    /** Constructor to initialize this cell */
-    public Cell(int row, int col) {
-        this.row = row;
-        this.col = col;
-        this.content = Seed.NO_SEED;
+    // Private variable
+    private String icon;
+    // Constructor (must be private)
+    private Seed(String icon) {
+        this.icon = icon;
     }
-
-    /** Reset the cell content to EMPTY, ready for a new game. */
-    public void newGame() {
-        this.content = Seed.NO_SEED;
-    }
-
-    /** The cell paints itself */
-    public void paint() {
-        // Retrieve the display icon (text) and print
-        String icon = this.content.getIcon();
-        System.out.print(icon);
+    // Public Getter
+    public String getIcon() {
+        return icon;
     }
 }
+
+private Seed currentPlayer;  // declare variable currentPlayer as an instance of enum Seed
+currentPlayer = Seed.CROSS;  // assign a value (an enum item) to the variable currentPlayer
+
+private Seed content;        // cell's content
+content = Seed.NO_SEED;
