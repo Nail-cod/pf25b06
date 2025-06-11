@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+
 /**
  * Tic-Tac-Toe: Two-player Graphic version with better OO design.
  * The Board and Cell classes are separated in their own classes.
@@ -12,7 +13,7 @@ public class GameMain extends JPanel {
     public static final String TITLE = "Tic Tac Toe";
     public static final Color COLOR_BG = Color.WHITE;
     public static final Color COLOR_BG_STATUS = new Color(216, 216, 216);
-    public static final Color COLOR_CROSS = new Color(239, 105, 80);  // Red #EF6950
+    public static final Color COLOR_CROSS = new Color(255, 105, 80);  // Red #EF6950
     public static final Color COLOR_NOUGHT = new Color(64, 154, 225); // Blue #409AE1
     public static final Font FONT_STATUS = new Font("OCR A Extended", Font.PLAIN, 14);
 
@@ -113,6 +114,8 @@ public class GameMain extends JPanel {
 
     /** The entry "main" method */
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter username: ");
         // Run GUI construction codes in Event-Dispatching thread for thread safety
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
