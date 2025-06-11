@@ -35,7 +35,7 @@ public class Board {  // save as "Board.java"
         }
     }
 
-    /**
+    /*
      *  The given player makes a move on (selectedRow, selectedCol).
      *  Update cells[selectedRow][selectedCol]. Compute and return the
      *  new game state (PLAYING, DRAW, CROSS_WON, NOUGHT_WON).
