@@ -1,7 +1,8 @@
+package process_2;
+
 public enum Seed {   // to save as "Seed.java"
     CROSS("X"), NOUGHT("O"), NO_SEED(" ");
 
-    content= Seed.NO_SEED;
     // Private variable
     private String icon;
     // Constructor (must be private)
@@ -11,10 +12,5 @@ public enum Seed {   // to save as "Seed.java"
     // Public Getter
     public String getIcon() {
         return icon;
-
-    private Seed currentPlayer;  // declare variable currentPlayer as an instance of enum Seed
-        currentPlayer = Seed.CROSS;  // assign a value (an enum item) to the variable currentPlayer
-    private Seed content;        // cell's content
-
     }
 }
