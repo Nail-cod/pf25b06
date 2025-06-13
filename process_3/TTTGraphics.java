@@ -151,6 +151,7 @@ public class TTTGraphics extends JFrame {
         }
     }
 
+
     class GamePanel extends JPanel {
         private static final long serialVersionUID = 1L; // to prevent serializable warning
 
