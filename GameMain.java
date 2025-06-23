@@ -33,7 +33,7 @@ public class GameMain extends JPanel {
         if (bgURL != null) {
             backgroundImage = new ImageIcon(bgURL).getImage();
         } else {
-            System.err.println("Couldn't find background image!");
+            System.err.println("Couldn't find background!");
         }
 
         // Mouse listener
