@@ -12,12 +12,6 @@ public class GameMain extends JPanel {
     public static final Font FONT_STATUS = new Font("OCR A Extended", Font.PLAIN, 14);
 
     // Enums & Modes
-    public enum GameMode {
-        HUMAN_VS_HUMAN,
-        HUMAN_VS_AI
-    }
-
-    private GameMode gameMode = GameMode.HUMAN_VS_AI;
 
     // Game state
     private Board board;
