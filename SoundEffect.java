@@ -9,7 +9,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 public enum SoundEffect {
     EAT_FOOD("Audio/womp.wav"),
     EXPLODE("Audio/cine 2.wav"),
-    DIE("Audio/sad.wav"),
+    DIE("Audio/patrick.wav"),
     BACKGROUND("Audio/Background.wav");
 
     /** Nested enumeration for specifying volume */
