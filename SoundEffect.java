@@ -9,7 +9,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 public enum SoundEffect {
     EAT_FOOD("Audio/womp.wav"),
     EXPLODE("Audio/cine 2.wav"),
-    DIE("Audio/sad.wav");
+    DIE("Audio/sad.wav"),
+    BACKGROUND("Audio/Background.wav");
 
     /** Nested enumeration for specifying volume */
     public static enum Volume {
@@ -19,7 +20,7 @@ public enum SoundEffect {
     public static Volume volume = Volume.LOW;
 
     /** Each sound effect has its own clip, loaded with its own sound file. */
-    private Clip clip;
+    public Clip clip;
 
     /** Private Constructor to construct each element of the enum with its own sound file. */
     private SoundEffect(String soundFileName) {
@@ -45,9 +46,14 @@ public enum SoundEffect {
     public void play() {
         if (volume != Volume.MUTE) {
             if (clip.isRunning())
-                clip.stop();   // Stop the player if it is still running
-            clip.setFramePosition(0); // rewind to the beginning
-            clip.start();     // Start playing
+                clip.stop();
+            clip.setFramePosition(0);
+
+            if (this == BACKGROUND) {
+                clip.loop(Clip.LOOP_CONTINUOUSLY); // looping backsound
+            } else {
+                clip.start(); // sound efek biasa
+            }
         }
     }
 

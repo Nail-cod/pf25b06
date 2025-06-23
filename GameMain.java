@@ -110,6 +110,11 @@ public class GameMain extends JPanel {
             }
         }
         currentState = State.PLAYING;
+
+        if (!SoundEffect.BACKGROUND.clip.isRunning()) {
+            SoundEffect.BACKGROUND.play();
+        }
+
     }
 
 
@@ -139,16 +144,22 @@ public class GameMain extends JPanel {
 
     /** The entry "main" method */
     public static void main(String[] args) {
-        // Run GUI construction codes in Event-Dispatching thread for thread safety
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 JFrame frame = new JFrame(TITLE);
-                // Set the content-pane of the JFrame to an instance of main JPanel
                 frame.setContentPane(new GameMain());
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.pack();
                 frame.setLocationRelativeTo(null); // center the application window
-                frame.setVisible(true);            // show it
+                frame.setVisible(true);
+
+                // Tambahkan window listener DI SINI
+                frame.addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowClosing(WindowEvent e) {
+                        SoundEffect.BACKGROUND.clip.stop();  // Stop backsound saat aplikasi ditutup
+                    }
+                });
             }
         });
     }
