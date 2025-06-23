@@ -5,15 +5,21 @@ import javax.swing.*;
 
 public class GameMain extends JPanel {
     private static final long serialVersionUID = 1L;
-    /**
-     * Tic-Tac-Toe: Two-player Graphic version with better OO design.
-     * The Board and Cell classes are separated in their own classes.
-     */
-    // Define named constants for the drawing graphics
+
+    // Constants
     public static final String TITLE = "Tic Tac Toe";
     public static final Color COLOR_BG_STATUS = new Color(247, 255, 0);
     public static final Font FONT_STATUS = new Font("OCR A Extended", Font.PLAIN, 14);
 
+    // Enums & Modes
+    public enum GameMode {
+        HUMAN_VS_HUMAN,
+        HUMAN_VS_AI
+    }
+
+    private GameMode gameMode = GameMode.HUMAN_VS_AI;
+
+    // Game state
     private Board board;
     private State currentState;
     private Seed currentPlayer;
@@ -43,14 +49,18 @@ public class GameMain extends JPanel {
                     if (row >= 0 && row < Board.ROWS && col >= 0 && col < Board.COLS
                             && board.cells[row][col].content == Seed.NO_SEED) {
                         currentState = board.stepGame(currentPlayer, row, col);
+                        SoundEffect.EAT_FOOD.play();
+                        repaint();
 
-                        if (currentPlayer == Seed.CROSS) {
-                            SoundEffect.EAT_FOOD.play();  // Suara X
+                        if (gameMode == GameMode.HUMAN_VS_AI && currentState == State.PLAYING) {
+                            currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
+                            makeAIMove();
+                            if (currentState == State.PLAYING) {
+                                currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
+                            }
                         } else {
-                            SoundEffect.DIE.play();       // Suara O
+                            currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
                         }
-
-                        currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
                     }
                 } else {
                     SoundEffect.EXPLODE.play();  // Suara restart
@@ -80,6 +90,24 @@ public class GameMain extends JPanel {
         newGame();
     }
 
+    private void makeAIMove() {
+        java.util.List<Point> emptyCells = new java.util.ArrayList<>();
+        for (int row = 0; row < Board.ROWS; row++) {
+            for (int col = 0; col < Board.COLS; col++) {
+                if (board.cells[row][col].content == Seed.NO_SEED) {
+                    emptyCells.add(new Point(row, col));
+                }
+            }
+        }
+
+        if (!emptyCells.isEmpty()) {
+            Point move = emptyCells.get((int) (Math.random() * emptyCells.size()));
+            currentState = board.stepGame(currentPlayer, move.x, move.y);
+            SoundEffect.DIE.play(); // misalnya suara AI berbeda
+            repaint();
+        }
+    }
+
     public void initGame() {
         board = new Board();
     }
@@ -106,22 +134,21 @@ public class GameMain extends JPanel {
 
         for (int row = 0; row < Board.ROWS; ++row) {
             for (int col = 0; col < Board.COLS; ++col) {
-                board.cells[row][col].content = Seed.NO_SEED; // all cells empty
+                board.cells[row][col].content = Seed.NO_SEED;
             }
         }
+
         currentState = State.PLAYING;
 
         if (!SoundEffect.BACKGROUND.clip.isRunning()) {
             SoundEffect.BACKGROUND.play();
         }
-
     }
 
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // Draw background image
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         }
@@ -161,3 +188,4 @@ public class GameMain extends JPanel {
         });
     }
 }
+
