@@ -1,3 +1,7 @@
+import java.awt.*;
+/**
+ * The Board class models the ROWS-by-COLS game board.
+ */
 public class Board {
     // Define named constants
     public static final int ROWS = 3;  // ROWS x COLS cells
