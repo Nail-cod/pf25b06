@@ -40,10 +40,12 @@ public class GameMain extends JPanel {
                             && board.cells[row][col].content == Seed.NO_SEED) {
                         // Update cells[][] and return the new game state after the move
                         currentState = board.stepGame(currentPlayer, row, col);
+                        SoundEffect.EAT_FOOD.play();
                         // Switch player
                         currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
                     }
                 } else {        // game over
+                    SoundEffect.DIE.play();
                     newGame();  // restart the game
                 }
                 // Refresh the drawing canvas
@@ -67,6 +69,7 @@ public class GameMain extends JPanel {
         super.setBorder(BorderFactory.createLineBorder(COLOR_BG_STATUS, 2, false));
 
         // Set up Game
+        SoundEffect.initGame();
         initGame();
         newGame();
     }
