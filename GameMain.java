@@ -85,13 +85,36 @@ public class GameMain extends JPanel {
     }
 
     public void newGame() {
+        // Pilih simbol di awal
+        Object[] options = {"Spongebob (X)", "Patrick (O)"};
+        int choice = JOptionPane.showOptionDialog(
+                this,
+                "Choose your character:",
+                "Player Selection",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]
+        );
+
+        if (choice == JOptionPane.YES_OPTION) {
+            currentPlayer = Seed.CROSS;
+        } else {
+            currentPlayer = Seed.NOUGHT;
+        }
+
         for (int row = 0; row < Board.ROWS; ++row) {
             for (int col = 0; col < Board.COLS; ++col) {
-                board.cells[row][col].content = Seed.NO_SEED;
+                board.cells[row][col].content = Seed.NO_SEED; // all cells empty
             }
         }
-        currentPlayer = Seed.CROSS;
         currentState = State.PLAYING;
+
+        if (!SoundEffect.BACKGROUND.clip.isRunning()) {
+            SoundEffect.BACKGROUND.play();
+        }
+
     }
 
     @Override
@@ -128,6 +151,13 @@ public class GameMain extends JPanel {
             frame.pack();
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
+
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    SoundEffect.BACKGROUND.clip.stop();  // Stop backsound saat aplikasi ditutup
+                }
+            });
         });
     }
 }
