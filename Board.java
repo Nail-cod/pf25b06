@@ -1,3 +1,5 @@
+import java.awt.*;
+
 public class Board {
     // Define named constants
     public static final int ROWS = 3;  // ROWS x COLS cells
