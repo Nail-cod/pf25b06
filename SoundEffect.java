@@ -7,9 +7,9 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 public enum SoundEffect {
-    EAT_FOOD("eat.mp3"),
-    EXPLODE("explode.mp3"),
-    DIE("die.mp3");
+    EAT_FOOD("Audio/eat.mp3"),
+    EXPLODE("Audio/explode.mp3"),
+    DIE("Audio/die.mp3");
 
     /** Nested enumeration for specifying volume */
     public static enum Volume {
