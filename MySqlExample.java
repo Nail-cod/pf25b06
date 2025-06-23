@@ -41,7 +41,5 @@ public class MySqlExample {
             System.out.println("Connection failure.");
             e.printStackTrace();
         }
-
-
     }
 }
