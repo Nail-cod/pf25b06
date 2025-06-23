@@ -112,6 +112,23 @@ public class GameMain extends JPanel {
     }
 
     public void newGame() {
+        // Tampilkan pesan selamat datang
+        JOptionPane.showMessageDialog(this, "Welcome To The Game!", "Welcome", JOptionPane.INFORMATION_MESSAGE);
+
+        // Pilih mode permainan
+        Object[] modeOptions = {"Player vs Player", "Player vs AI"};
+        int modeChoice = JOptionPane.showOptionDialog(
+                this,
+                "Select Game Mode:",
+                "Game Mode",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                modeOptions,
+                modeOptions[0]
+        );
+        gameMode = (modeChoice == JOptionPane.YES_OPTION) ? GameMode.HUMAN_VS_HUMAN : GameMode.HUMAN_VS_AI;
+
         // Pilih simbol di awal
         Object[] options = {"Spongebob (X)", "Patrick (O)"};
         int choice = JOptionPane.showOptionDialog(
