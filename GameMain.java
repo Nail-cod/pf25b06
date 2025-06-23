@@ -40,7 +40,11 @@ public class GameMain extends JPanel {
                             && board.cells[row][col].content == Seed.NO_SEED) {
                         // Update cells[][] and return the new game state after the move
                         currentState = board.stepGame(currentPlayer, row, col);
-                        SoundEffect.EAT_FOOD.play();
+                        if (currentPlayer == Seed.CROSS) {
+                            SoundEffect.EAT_FOOD.play(); // suara untuk X
+                        } else {
+                            SoundEffect.EXPLODE.play(); // suara untuk O
+                        }
                         // Switch player
                         currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
                     }
@@ -81,14 +85,33 @@ public class GameMain extends JPanel {
 
     /** Reset the game-board contents and the current-state, ready for new game */
     public void newGame() {
+        // Pilih simbol di awal
+        Object[] options = {"Spongebob (X)", "Patrick (O)"};
+        int choice = JOptionPane.showOptionDialog(
+                this,
+                "Choose your character:",
+                "Player Selection",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]
+        );
+
+        if (choice == JOptionPane.YES_OPTION) {
+            currentPlayer = Seed.CROSS;
+        } else {
+            currentPlayer = Seed.NOUGHT;
+        }
+
         for (int row = 0; row < Board.ROWS; ++row) {
             for (int col = 0; col < Board.COLS; ++col) {
                 board.cells[row][col].content = Seed.NO_SEED; // all cells empty
             }
         }
-        currentPlayer = Seed.CROSS;    // cross plays first
-        currentState = State.PLAYING;  // ready to play
+        currentState = State.PLAYING;
     }
+
 
     /** Custom painting codes on this JPanel */
     @Override
