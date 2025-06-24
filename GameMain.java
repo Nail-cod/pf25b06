@@ -63,7 +63,7 @@ public class GameMain extends JPanel {
 
                         if (gameMode == GameMode.HUMAN_VS_AI && currentState == State.PLAYING) {
                             currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
-                            Timer aiTimer = new Timer(1000, new ActionListener() {
+                            Timer aiTimer = new Timer(800, new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent evt) {
                                     makeAIMove();
