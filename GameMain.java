@@ -63,9 +63,24 @@ public class GameMain extends JPanel {
                     }
                 } else {
                     SoundEffect.EXPLODE.play();  // Suara restart
-                    newGame();
-                }
 
+                    int choice = JOptionPane.showOptionDialog(
+                            GameMain.this,
+                            getResultMessage(),
+                            "Game Over",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            new String[]{"Reset Game", "Change Mode"},
+                            "Reset Game"
+                    );
+
+                    if (choice == JOptionPane.YES_OPTION) {
+                        resetGameOnly();  // hanya reset board
+                    } else if (choice == JOptionPane.NO_OPTION) {
+                        GameMain.recreateMainPanel(mainFrame);// kembali ke pemilihan mode & karakter
+                    }
+                }
                 repaint();
             }
         });
@@ -84,7 +99,6 @@ public class GameMain extends JPanel {
         super.setPreferredSize(new Dimension(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT + 30));
         super.setBorder(BorderFactory.createLineBorder(COLOR_BG_STATUS, 2));
 
-        SoundEffect.initGame();
         initGame();
         newGame();
     }
@@ -112,8 +126,6 @@ public class GameMain extends JPanel {
     }
 
     public void newGame() {
-        // Tampilkan pesan selamat datang
-        JOptionPane.showMessageDialog(this, "Welcome To The Game!", "Welcome", JOptionPane.INFORMATION_MESSAGE);
 
         // Pilih mode permainan
         Object[] modeOptions = {"Player vs Player", "Player vs AI"};
@@ -186,19 +198,63 @@ public class GameMain extends JPanel {
         }
     }
 
+    public static void recreateMainPanel(JFrame frame) {
+        frame.getContentPane().removeAll(); // Hapus semua panel lama
+        GameMain newPanel = new GameMain(); // Buat panel baru
+        frame.setContentPane(newPanel);     // Ganti content pane
+        frame.revalidate();                 // Refresh frame
+        frame.repaint();                    // Gambar ulang
+    }
+
+    private static JFrame mainFrame;
+
+    public static void setMainFrame(JFrame frame) {
+        mainFrame = frame;
+    }
+
+
+    private String getResultMessage() {
+        switch (currentState) {
+            case CROSS_WON: return "'Spongebob' Won! What do you want to do next?";
+            case NOUGHT_WON: return "'Patrick' Won! What do you want to do next?";
+            case DRAW: return "It's a Draw! What do you want to do next?";
+            default: return "Game Over!";
+        }
+    }
+
+    public void resetGameOnly() {
+        for (int row = 0; row < Board.ROWS; ++row) {
+            for (int col = 0; col < Board.COLS; ++col) {
+                board.cells[row][col].content = Seed.NO_SEED;
+            }
+        }
+        currentState = State.PLAYING;
+        repaint();
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame(TITLE);
-            frame.setContentPane(new GameMain());
+            GameMain.setMainFrame(frame);
+
+            SoundEffect.initGame();
+            if (!SoundEffect.BACKGROUND.clip.isRunning()) {
+                SoundEffect.BACKGROUND.play();
+            }
+
+            GameMain game = new GameMain();
+            frame.setContentPane(game);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.pack();
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
 
+            JOptionPane.showMessageDialog(game, "Welcome To The Game!", "Welcome", JOptionPane.INFORMATION_MESSAGE);
+
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    SoundEffect.BACKGROUND.clip.stop();  // Stop backsound saat aplikasi ditutup
+                    SoundEffect.BACKGROUND.clip.stop();
                 }
             });
         });
