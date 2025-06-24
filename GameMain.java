@@ -6,7 +6,6 @@ import javax.swing.*;
 public class GameMain extends JPanel {
     private static final long serialVersionUID = 1L;
 
-    // Constants
     public static final String TITLE = "Tic Tac Toe";
     public static final Color COLOR_BG_STATUS = new Color(247, 255, 0);
     public static final Font FONT_STATUS = new Font("OCR A Extended", Font.PLAIN, 14);
@@ -16,15 +15,15 @@ public class GameMain extends JPanel {
         HUMAN_VS_AI
     }
 
-    private GameMode gameMode = GameMode.HUMAN_VS_AI;// Enums & Modes
+    private GameMode gameMode = GameMode.HUMAN_VS_AI;
 
-    // Game state
     private Board board;
     private State currentState;
     private Seed currentPlayer;
     private JLabel statusBar;
-
     private Image backgroundImage;
+    private AIPlayer.Difficulty aiDifficulty = AIPlayer.Difficulty.EASY;
+
 
     public interface GameChangeListener {
         void onRequestChangeMode();
@@ -37,22 +36,16 @@ public class GameMain extends JPanel {
     }
 
     public GameMain() {
-        // Load background image
         URL bgURL = getClass().getClassLoader().getResource("images/jellyfish.jpeg");
         if (bgURL != null) {
             backgroundImage = new ImageIcon(bgURL).getImage();
-        } else {
-            System.err.println("Couldn't find background!");
         }
 
-        // Mouse listener
         super.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int mouseX = e.getX();
-                int mouseY = e.getY();
-                int row = mouseY / Cell.SIZE;
-                int col = mouseX / Cell.SIZE;
+                int row = e.getY() / Cell.SIZE;
+                int col = e.getX() / Cell.SIZE;
 
                 if (currentState == State.PLAYING) {
                     if (row >= 0 && row < Board.ROWS && col >= 0 && col < Board.COLS
@@ -63,27 +56,25 @@ public class GameMain extends JPanel {
 
                         if (gameMode == GameMode.HUMAN_VS_AI && currentState == State.PLAYING) {
                             currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
-                            Timer aiTimer = new Timer(800, new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent evt) {
-                                    makeAIMove();
-                                    if (currentState == State.PLAYING) {
-                                        currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
-                                    }
-                                    ((Timer) evt.getSource()).stop(); // Hentikan timer setelah sekali jalan
-                                    repaint();
-                                }
-                            });
-                            aiTimer.setRepeats(false); // Hanya jalan sekali
-                            aiTimer.start();
 
+                            new Timer(600, evt -> {
+                                AIPlayer ai = new AIPlayer(board, currentPlayer, aiDifficulty);
+                                Point move = ai.getAIMove();
+                                currentState = board.stepGame(currentPlayer, move.x, move.y);
+                                SoundEffect.DIE.play();
+
+                                if (currentState == State.PLAYING) {
+                                    currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
+                                }
+                                repaint();
+                                ((Timer) evt.getSource()).stop();
+                            }).start();
                         } else {
                             currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
                         }
                     }
                 } else {
-                    SoundEffect.EXPLODE.play();  // Suara restart
-
+                    SoundEffect.EXPLODE.play();
                     int choice = JOptionPane.showOptionDialog(
                             GameMain.this,
                             getResultMessage(),
@@ -96,19 +87,15 @@ public class GameMain extends JPanel {
                     );
 
                     if (choice == JOptionPane.YES_OPTION) {
-                        resetGameOnly();  // hanya reset board
-                    } else if (choice == JOptionPane.NO_OPTION) {
-                        if (changeListener != null) {
-                            changeListener.onRequestChangeMode(); // Ini memicu recreate dari luar
-                        }
+                        resetGameOnly();
+                    } else if (choice == JOptionPane.NO_OPTION && changeListener != null) {
+                        changeListener.onRequestChangeMode();
                     }
-
                 }
                 repaint();
             }
         });
 
-        // Status bar
         statusBar = new JLabel();
         statusBar.setFont(FONT_STATUS);
         statusBar.setBackground(COLOR_BG_STATUS);
@@ -117,31 +104,13 @@ public class GameMain extends JPanel {
         statusBar.setHorizontalAlignment(JLabel.LEFT);
         statusBar.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 12));
 
-        super.setLayout(new BorderLayout());
-        super.add(statusBar, BorderLayout.PAGE_END);
-        super.setPreferredSize(new Dimension(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT + 30));
-        super.setBorder(BorderFactory.createLineBorder(COLOR_BG_STATUS, 2));
+        setLayout(new BorderLayout());
+        add(statusBar, BorderLayout.PAGE_END);
+        setPreferredSize(new Dimension(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT + 30));
+        setBorder(BorderFactory.createLineBorder(COLOR_BG_STATUS, 2));
 
         initGame();
         newGame();
-    }
-
-    private void makeAIMove() {
-        java.util.List<Point> emptyCells = new java.util.ArrayList<>();
-        for (int row = 0; row < Board.ROWS; row++) {
-            for (int col = 0; col < Board.COLS; col++) {
-                if (board.cells[row][col].content == Seed.NO_SEED) {
-                    emptyCells.add(new Point(row, col));
-                }
-            }
-        }
-
-        if (!emptyCells.isEmpty()) {
-            Point move = emptyCells.get((int) (Math.random() * emptyCells.size()));
-            currentState = board.stepGame(currentPlayer, move.x, move.y);
-            SoundEffect.DIE.play(); // misalnya suara AI berbeda
-            repaint();
-        }
     }
 
     public void initGame() {
@@ -149,7 +118,6 @@ public class GameMain extends JPanel {
     }
 
     public void newGame() {
-
         // Pilih mode permainan
         Object[] modeOptions = {"Player vs Player", "Player vs AI"};
         int modeChoice = JOptionPane.showOptionDialog(
@@ -163,7 +131,26 @@ public class GameMain extends JPanel {
                 modeOptions[0]
         );
         gameMode = (modeChoice == JOptionPane.YES_OPTION) ? GameMode.HUMAN_VS_HUMAN : GameMode.HUMAN_VS_AI;
-
+        // Jika AI dipilih, tampilkan pilihan tingkat kesulitan
+        if (gameMode == GameMode.HUMAN_VS_AI) {
+            Object[] difficultyOptions = {"Easy", "Medium", "Hard"};
+            int diffChoice = JOptionPane.showOptionDialog(
+                    this,
+                    "Select AI Difficulty:",
+                    "AI Difficulty",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    difficultyOptions,
+                    difficultyOptions[0]
+            );
+            aiDifficulty = switch (diffChoice) {
+                case 0 -> AIPlayer.Difficulty.EASY;
+                case 1 -> AIPlayer.Difficulty.MEDIUM;
+                case 2 -> AIPlayer.Difficulty.HARD;
+                default -> AIPlayer.Difficulty.EASY; // default fallback
+            };
+        }
         // Pilih simbol di awal
         Object[] options = {"Spongebob (X)", "Patrick (O)"};
         int choice = JOptionPane.showOptionDialog(
@@ -176,36 +163,30 @@ public class GameMain extends JPanel {
                 options,
                 options[0]
         );
-
         if (choice == JOptionPane.YES_OPTION) {
             currentPlayer = Seed.CROSS;
         } else {
             currentPlayer = Seed.NOUGHT;
         }
-
         for (int row = 0; row < Board.ROWS; ++row) {
             for (int col = 0; col < Board.COLS; ++col) {
                 board.cells[row][col].content = Seed.NO_SEED;
             }
         }
-
         currentState = State.PLAYING;
-
         if (!SoundEffect.BACKGROUND.clip.isRunning()) {
             SoundEffect.BACKGROUND.play();
         }
     }
 
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         }
-
         board.paint(g);
-
         if (currentState == State.PLAYING) {
             statusBar.setForeground(Color.BLACK);
             statusBar.setText((currentPlayer == Seed.CROSS) ? "Spongebob's Turn" : "Patrick's Turn");
@@ -221,28 +202,13 @@ public class GameMain extends JPanel {
         }
     }
 
-    public static void recreateMainPanel(JFrame frame) {
-        frame.getContentPane().removeAll(); // Hapus semua panel lama
-        GameMain newPanel = new GameMain(); // Buat panel baru
-        frame.setContentPane(newPanel);     // Ganti content pane
-        frame.revalidate();                 // Refresh frame
-        frame.repaint();                    // Gambar ulang
-    }
-
-    private static JFrame mainFrame;
-
-    public static void setMainFrame(JFrame frame) {
-        mainFrame = frame;
-    }
-
-
     private String getResultMessage() {
-        switch (currentState) {
-            case CROSS_WON: return "'Spongebob' Won! What do you want to do next?";
-            case NOUGHT_WON: return "'Patrick' Won! What do you want to do next?";
-            case DRAW: return "It's a Draw! What do you want to do next?";
-            default: return "Game Over!";
-        }
+        return switch (currentState) {
+            case CROSS_WON -> "'Spongebob' Won! What do you want to do next?";
+            case NOUGHT_WON -> "'Patrick' Won! What do you want to do next?";
+            case DRAW -> "It's a Draw! What do you want to do next?";
+            default -> "Game Over!";
+        };
     }
 
     public void resetGameOnly() {
@@ -259,24 +225,22 @@ public class GameMain extends JPanel {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame(TITLE);
 
-            // Buat method pembuat GameMain
-            GameChangeListener listener = new GameChangeListener() {
-                @Override
-                public void onRequestChangeMode() {
-                    frame.getContentPane().removeAll();
-                    GameMain newGame = new GameMain();
-                    newGame.setGameChangeListener(this);
-                    frame.setContentPane(newGame);
-                    frame.revalidate();
-                    frame.repaint();
-                }
+            // Buat array satu elemen untuk menampung listener (supaya bisa diakses dari lambda)
+            final GameChangeListener[] listenerRef = new GameChangeListener[1];
+
+            listenerRef[0] = () -> {
+                frame.getContentPane().removeAll();
+                GameMain newGame = new GameMain();
+                newGame.setGameChangeListener(listenerRef[0]); // gunakan listener yang sama
+                frame.setContentPane(newGame);
+                frame.revalidate();
+                frame.repaint();
             };
 
             GameMain gamePanel = new GameMain();
-            gamePanel.setGameChangeListener(listener);
+            gamePanel.setGameChangeListener(listenerRef[0]);
 
             frame.setContentPane(gamePanel);
-            setMainFrame(frame);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.pack();
             frame.setLocationRelativeTo(null);
