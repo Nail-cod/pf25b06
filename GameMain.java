@@ -26,6 +26,16 @@ public class GameMain extends JPanel {
 
     private Image backgroundImage;
 
+    public interface GameChangeListener {
+        void onRequestChangeMode();
+    }
+
+    private GameChangeListener changeListener;
+
+    public void setGameChangeListener(GameChangeListener listener) {
+        this.changeListener = listener;
+    }
+
     public GameMain() {
         // Load background image
         URL bgURL = getClass().getClassLoader().getResource("images/jellyfish.jpeg");
@@ -53,10 +63,20 @@ public class GameMain extends JPanel {
 
                         if (gameMode == GameMode.HUMAN_VS_AI && currentState == State.PLAYING) {
                             currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
-                            makeAIMove();
-                            if (currentState == State.PLAYING) {
-                                currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
-                            }
+                            Timer aiTimer = new Timer(1000, new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent evt) {
+                                    makeAIMove();
+                                    if (currentState == State.PLAYING) {
+                                        currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
+                                    }
+                                    ((Timer) evt.getSource()).stop(); // Hentikan timer setelah sekali jalan
+                                    repaint();
+                                }
+                            });
+                            aiTimer.setRepeats(false); // Hanya jalan sekali
+                            aiTimer.start();
+
                         } else {
                             currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
                         }
@@ -78,8 +98,11 @@ public class GameMain extends JPanel {
                     if (choice == JOptionPane.YES_OPTION) {
                         resetGameOnly();  // hanya reset board
                     } else if (choice == JOptionPane.NO_OPTION) {
-                        GameMain.recreateMainPanel(mainFrame);// kembali ke pemilihan mode & karakter
+                        if (changeListener != null) {
+                            changeListener.onRequestChangeMode(); // Ini memicu recreate dari luar
+                        }
                     }
+
                 }
                 repaint();
             }
@@ -235,21 +258,29 @@ public class GameMain extends JPanel {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame(TITLE);
-            GameMain.setMainFrame(frame);
 
-            SoundEffect.initGame();
-            if (!SoundEffect.BACKGROUND.clip.isRunning()) {
-                SoundEffect.BACKGROUND.play();
-            }
+            // Buat method pembuat GameMain
+            GameChangeListener listener = new GameChangeListener() {
+                @Override
+                public void onRequestChangeMode() {
+                    frame.getContentPane().removeAll();
+                    GameMain newGame = new GameMain();
+                    newGame.setGameChangeListener(this);
+                    frame.setContentPane(newGame);
+                    frame.revalidate();
+                    frame.repaint();
+                }
+            };
 
-            GameMain game = new GameMain();
-            frame.setContentPane(game);
+            GameMain gamePanel = new GameMain();
+            gamePanel.setGameChangeListener(listener);
+
+            frame.setContentPane(gamePanel);
+            setMainFrame(frame);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.pack();
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
-
-            JOptionPane.showMessageDialog(game, "Welcome To The Game!", "Welcome", JOptionPane.INFORMATION_MESSAGE);
 
             frame.addWindowListener(new WindowAdapter() {
                 @Override
@@ -259,4 +290,5 @@ public class GameMain extends JPanel {
             });
         });
     }
+
 }
