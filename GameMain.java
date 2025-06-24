@@ -44,54 +44,73 @@ public class GameMain extends JPanel {
         super.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int row = e.getY() / Cell.SIZE;
-                int col = e.getX() / Cell.SIZE;
+                int mouseX = e.getX();
+                int mouseY = e.getY();
 
-                if (currentState == State.PLAYING) {
-                    if (row >= 0 && row < Board.ROWS && col >= 0 && col < Board.COLS
-                            && board.cells[row][col].content == Seed.NO_SEED) {
-                        currentState = board.stepGame(currentPlayer, row, col);
-                        SoundEffect.EAT_FOOD.play();
-                        repaint();
+                // Hitung offset board yang berada di tengah
+                int boardWidth = Board.CANVAS_WIDTH;
+                int boardHeight = Board.CANVAS_HEIGHT;
+                int offsetX = (getWidth() - boardWidth) / 2;
+                int offsetY = (getHeight() - boardHeight - statusBar.getHeight()) / 2;
 
-                        if (gameMode == GameMode.HUMAN_VS_AI && currentState == State.PLAYING) {
-                            currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
+                int adjustedX = mouseX - offsetX;
+                int adjustedY = mouseY - offsetY;
 
-                            new Timer(600, evt -> {
-                                AIPlayer ai = new AIPlayer(board, currentPlayer, aiDifficulty);
-                                Point move = ai.getAIMove();
-                                currentState = board.stepGame(currentPlayer, move.x, move.y);
-                                SoundEffect.DIE.play();
+                // Pastikan klik terjadi di dalam area board
+                if (adjustedX >= 0 && adjustedY >= 0 &&
+                        adjustedX < boardWidth && adjustedY < boardHeight) {
 
-                                if (currentState == State.PLAYING) {
-                                    currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
-                                }
-                                repaint();
-                                ((Timer) evt.getSource()).stop();
-                            }).start();
-                        } else {
-                            currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
+                    int row = adjustedY / Cell.SIZE;
+                    int col = adjustedX / Cell.SIZE;
+
+                    if (currentState == State.PLAYING) {
+                        if (board.cells[row][col].content == Seed.NO_SEED) {
+                            currentState = board.stepGame(currentPlayer, row, col);
+                            SoundEffect.EAT_FOOD.play();
+                            repaint();
+
+                            if (gameMode == GameMode.HUMAN_VS_AI && currentState == State.PLAYING) {
+                                currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
+
+                                // Delay sebelum AI bergerak
+                                Timer timer = new Timer(600, evt -> {
+                                    AIPlayer ai = new AIPlayer(board, currentPlayer, AIPlayer.Difficulty.HARD);
+                                    Point move = ai.getAIMove();
+                                    currentState = board.stepGame(currentPlayer, move.x, move.y);
+                                    SoundEffect.DIE.play();
+                                    if (currentState == State.PLAYING) {
+                                        currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
+                                    }
+                                    repaint();
+                                });
+                                timer.setRepeats(false);
+                                timer.start();
+                            } else if (gameMode == GameMode.HUMAN_VS_HUMAN && currentState == State.PLAYING) {
+                                currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
+                            }
+                        }
+                    } else {
+                        SoundEffect.EXPLODE.play();
+
+                        int choice = JOptionPane.showOptionDialog(
+                                GameMain.this,
+                                getResultMessage(),
+                                "Game Over",
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.QUESTION_MESSAGE,
+                                null,
+                                new String[]{"Reset Game", "Change Mode"},
+                                "Reset Game"
+                        );
+
+                        if (choice == JOptionPane.YES_OPTION) {
+                            resetGameOnly();
+                        } else if (choice == JOptionPane.NO_OPTION && changeListener != null) {
+                            changeListener.onRequestChangeMode();
                         }
                     }
-                } else {
-                    SoundEffect.EXPLODE.play();
-                    int choice = JOptionPane.showOptionDialog(
-                            GameMain.this,
-                            getResultMessage(),
-                            "Game Over",
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.QUESTION_MESSAGE,
-                            null,
-                            new String[]{"Reset Game", "Change Mode"},
-                            "Reset Game"
-                    );
-
-                    if (choice == JOptionPane.YES_OPTION) {
-                        resetGameOnly();
-                    } else if (choice == JOptionPane.NO_OPTION && changeListener != null) {
-                        changeListener.onRequestChangeMode();
-                    }
                 }
+
                 repaint();
             }
         });
@@ -183,10 +202,23 @@ public class GameMain extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         }
-        board.paint(g);
+
+        // Hitung posisi untuk meletakkan board di tengah
+        int boardWidth = Board.CANVAS_WIDTH;
+        int boardHeight = Board.CANVAS_HEIGHT;
+        int x = (getWidth() - boardWidth) / 2;
+        int y = (getHeight() - boardHeight - statusBar.getHeight()) / 2;
+
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.translate(x, y);  // geser canvas menggambar ke titik (x,y)
+        board.paint(g2d);     // gambar board dengan offset
+        g2d.dispose();
+
+        // Status bar tetap
         if (currentState == State.PLAYING) {
             statusBar.setForeground(Color.BLACK);
             statusBar.setText((currentPlayer == Seed.CROSS) ? "Spongebob's Turn" : "Patrick's Turn");
@@ -201,6 +233,7 @@ public class GameMain extends JPanel {
             statusBar.setText("'Patrick' Won! Click to play again.");
         }
     }
+
 
     private String getResultMessage() {
         return switch (currentState) {
@@ -224,35 +257,35 @@ public class GameMain extends JPanel {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame(TITLE);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(600, 400);
+            frame.setLocationRelativeTo(null);
 
-            // Buat array satu elemen untuk menampung listener (supaya bisa diakses dari lambda)
-            final GameChangeListener[] listenerRef = new GameChangeListener[1];
+            // [1] Inisialisasi playListener dan settingsListener
+            ActionListener[] playListenerHolder = new ActionListener[1];  // temp holder karena playListener butuh akses ke dirinya sendiri
 
-            listenerRef[0] = () -> {
-                frame.getContentPane().removeAll();
-                GameMain newGame = new GameMain();
-                newGame.setGameChangeListener(listenerRef[0]); // gunakan listener yang sama
-                frame.setContentPane(newGame);
-                frame.revalidate();
-                frame.repaint();
+            ActionListener settingsListener = e -> {
+                JOptionPane.showMessageDialog(frame, "Settings page coming soon!");
             };
 
-            GameMain gamePanel = new GameMain();
-            gamePanel.setGameChangeListener(listenerRef[0]);
+            ActionListener playListener = e -> {
+                GameMain gamePanel = new GameMain();
+                gamePanel.setGameChangeListener(() -> {
+                    // kembali ke menu
+                    MainMenuPanel menuPanel = new MainMenuPanel(playListenerHolder[0], settingsListener);
+                    frame.setContentPane(menuPanel);
+                    frame.revalidate();
+                    frame.repaint();
+                });
+                frame.setContentPane(gamePanel);
+                frame.revalidate();
+            };
+            playListenerHolder[0] = playListener; // isi holder setelah selesai
 
-            frame.setContentPane(gamePanel);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.pack();
-            frame.setLocationRelativeTo(null);
+            // [2] Buat panel menu utama
+            MainMenuPanel menuPanel = new MainMenuPanel(playListener, settingsListener);
+            frame.setContentPane(menuPanel);
             frame.setVisible(true);
-
-            frame.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosing(WindowEvent e) {
-                    SoundEffect.BACKGROUND.clip.stop();
-                }
-            });
         });
     }
-
 }
