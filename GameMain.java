@@ -131,10 +131,13 @@ public class GameMain extends JPanel {
             }
         }
         currentState = State.PLAYING;
+
+        SoundEffect.initGame(); // Tambahkan ini agar semua clip reload
         if (!SoundEffect.BACKGROUND.clip.isRunning()) {
             SoundEffect.BACKGROUND.play();
         }
     }
+
 
     @Override
     public void paintComponent(Graphics g) {

@@ -44,7 +44,7 @@ public class MainFrame extends JFrame {
         showPage("game");
     }
 
-    // 🔽 Tambahkan method main ini agar bisa dijalankan
+    // method main ini agar bisa dijalankan
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             MainFrame frame = new MainFrame();
